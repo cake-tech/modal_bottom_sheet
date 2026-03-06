@@ -221,7 +221,7 @@ class CupertinoModalBottomSheetRoute<T> extends ModalSheetRoute<T> {
           alignment: Alignment.topCenter,
         ),
       ),
-      child: child,
+      child: RepaintBoundary(child: child),
       animation: secondaryAnimation,
     );
   }
@@ -271,9 +271,11 @@ class _CupertinoModalTransition extends StatelessWidget {
 
     return AnimatedBuilder(
       animation: curvedAnimation,
-      child: CupertinoUserInterfaceLevel(
-        data: CupertinoUserInterfaceLevelData.base,
-        child: body,
+      child: RepaintBoundary(
+        child: CupertinoUserInterfaceLevel(
+          data: CupertinoUserInterfaceLevelData.base,
+          child: body,
+        ),
       ),
       builder: (context, child) {
         final progress = curvedAnimation.value;
