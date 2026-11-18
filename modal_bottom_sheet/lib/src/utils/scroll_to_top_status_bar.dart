@@ -23,35 +23,40 @@ class StatusBarGestureDetector extends StatefulWidget {
 }
 
 class _StatusBarGestureDetectorState extends State<StatusBarGestureDetector> {
-  final OverlayPortalController controller = OverlayPortalController();
+  late final OverlayEntry _entry = OverlayEntry(
+    builder: (context) {
+      final view = View.of(context);
+      return Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          height: view.padding.top / view.devicePixelRatio,
+          width: double.infinity,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => widget.onTap(context),
+            // iOS accessibility automatically adds scroll-to-top to the clock in the status bar
+            excludeFromSemantics: true,
+          ),
+        ),
+      );
+    },
+  );
 
   @override
   void initState() {
-    controller.show();
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Overlay.of(context, rootOverlay: true).insert(_entry);
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    final view = View.of(context);
-    return OverlayPortal.targetsRootOverlay(
-      controller: controller,
-      overlayChildBuilder: (context) {
-        return Align(
-          alignment: Alignment.topCenter,
-          child: SizedBox(
-            height: view.padding.top / view.devicePixelRatio,
-            width: double.infinity,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => widget.onTap(context),
-              // iOS accessibility automatically adds scroll-to-top to the clock in the status bar
-              excludeFromSemantics: true,
-            ),
-          ),
-        );
-      },
-      child: widget.child,
-    );
+  void dispose() {
+    if (_entry.mounted) _entry.remove();
+    _entry.dispose();
+    super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
